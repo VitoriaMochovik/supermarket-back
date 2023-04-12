@@ -12,26 +12,37 @@ export class OrderRepository {
     order: Omit<OrderEntity, 'products' | 'id'>,
     products: (Pick<ProductEntity, 'id'> & { qty: number })[],
   ) {
-    const [result] = await this.database
-      .knex('order')
-      .insert(snakecaseKeys(order))
-      .returning('*');
+    const transaction = await this.database.knex.transaction();
 
-    await this.database.knex('order_product').insert(
-      products.map((product) => ({
-        id_order: result.id,
-        id_product: product.id,
-        qty: product.qty,
-      })),
-    );
+    try {
+      const [result] = await transaction('order')
+        .insert(snakecaseKeys(order))
+        .returning('*');
 
-    const promises = products.map(async (product) => {
-      await this.database
-        .knex('product')
-        .update('qty_stock', `qty_stock - ${product.qty}`)
-        .where({ id: product.id });
-    });
+      await transaction('order_product').insert(
+        products.map((product) => ({
+          id_order: result.id,
+          id_product: product.id,
+          qty: product.qty,
+        })),
+      );
 
-    await Promise.all(promises);
+      const promises = products.map(async (product) => {
+        await transaction.raw(
+          `
+        update product set qty_stock = qty_stock - ? where id = ?;
+      `,
+          [product.qty, product.id],
+        );
+      });
+
+      await Promise.all(promises);
+
+      transaction.commit();
+    } catch (err) {
+      transaction.rollback();
+
+      throw err;
+    }
   }
 }
