@@ -3,17 +3,17 @@ import knex, { Knex } from 'knex';
 
 @Injectable()
 export class Database {
-  private _knex: Knex;
+  private readonly _knex: Knex;
 
   constructor() {
     this._knex = knex({
       client: 'pg',
       connection: {
-        host: 'localhost',
-        port: 5432,
-        user: 'postgres',
-        password: 'postgres',
-        database: 'supermarket',
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
       },
     });
   }
