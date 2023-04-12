@@ -8,8 +8,9 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start": "npm run migrate:run && nest start",
+    "start:dev": "npm run migrate:run && nest start --watch",
+    "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -17,16 +18,26 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrate:create": "knex migrate:make",
+    "migrate:run": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback",
+    "seed:create": "knex seed:make",
+    "seed:run": "knex seed:run"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "camelcase-keys": "^7.0.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
     "knex": "^2.4.2",
     "pg": "^8.10.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "snakecase-keys": "^5.4.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
